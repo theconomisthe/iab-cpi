@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>İAB-TÜFE Endeksi</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --border: #334155;
+      --text: #f1f5f9; --muted: #94a3b8; --accent: #38bdf8;
+      --up: #f87171; --down: #34d399;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.45; padding: 20px 24px; }
+    .container { max-width: 1320px; margin: 0 auto; }
+
+    header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px;
+    }
+    h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; }
+    .badge {
+      background: rgba(56, 189, 248, 0.14); color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35); padding: 6px 14px;
+      border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+    }
+
+    /* Birlesik Simetrik KPI Paneli */
+    .kpi-panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 20px; margin-bottom: 22px;
+    }
+    .grid-headers {
+      display: grid; grid-template-columns: 210px repeat(4, 1fr); gap: 12px;
+      padding: 4px 0 10px 0; border-bottom: 1px solid rgba(51,65,85,0.7);
+    }
+    .col-head {
+      font-size: 0.74rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em; text-align: center;
+    }
+
+    .group-row {
+      display: grid; grid-template-columns: 210px repeat(4, 1fr); gap: 12px;
+      align-items: center; padding: 10px 0;
+      border-bottom: 1px solid rgba(51,65,85,0.4);
+    }
+    .group-row:last-child { border-bottom: none; padding-bottom: 2px; }
+
+    .group-label {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 0.96rem; padding-left: 8px;
+      border-left: 4px solid var(--accent);
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    .cell-wrap { display: flex; justify-content: center; }
+    .pill-card {
+      width: 162px; min-height: 58px;
+      background: rgba(15, 23, 42, 0.58);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      border-radius: 10px; padding: 8px 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .mobile-label { display: none; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+
+    @media (max-width: 980px) {
+      .grid-headers { display: none; }
+      .mobile-label { display: block; }
+      .group-row { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px 0; }
+      .group-label { grid-column: 1 / -1; margin-bottom: 4px; }
+      .pill-card { width: 100%; }
+    }
+
+    .kpi-val { font-size: 1.38rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    .kpi-sub { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+    .pos { color: var(--up); } .neg { color: var(--down); }
+
+    .bars-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 20px;
+    }
+    @media (max-width: 900px) { .bars-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .chart-box-bar { position: relative; height: 245px; width: 100%; }
+    .chart-box-line { position: relative; height: 320px; width: 100%; }
+
+    .card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 12px;
+    }
+    .card-title { font-size: 0.98rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .btn-group button {
+      background: transparent; color: var(--muted); border: 1px solid var(--border);
+      padding: 4px 11px; border-radius: 6px; cursor: pointer; font-size: 0.82rem;
+    }
+    .btn-group button.active, .btn-group button:hover {
+      background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>İAB-TÜFE Endeksi</h1>
+    <div class="badge" id="donemRozet">Yükleniyor...</div>
+  </header>
+
+  <section class="kpi-panel" id="kpiAlani"></section>
+
+  <section class="bars-grid">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="dot" style="background:#38bdf8"></span>Genel Gıda — Aylık Enflasyon (%)</div>
+      </div>
+      <div class="chart-box-bar"><canvas id="barGenel"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="dot" style="background:#a78bfa"></span>Çekirdek Gıda — Aylık Enflasyon (%)</div>
+      </div>
+      <div class="chart-box-bar"><canvas id="barCekirdek"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="dot" style="background:#34d399"></span>Taze Meyve ve Sebze — Aylık Enflasyon (%)</div>
+      </div>
+      <div class="chart-box-bar"><canvas id="barMeyve"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="dot" style="background:#fbbf24"></span>Alkolsüz İçecekler — Aylık Enflasyon (%)</div>
+      </div>
+      <div class="chart-box-bar"><canvas id="barIcecek"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div class="card-title">Günlük Gıda Endekslerinin Seyri</div>
+      <div class="btn-group" id="aralikButonlar">
+        <button data-gun="30">1A</button>
+        <button data-gun="90">3A</button>
+        <button data-gun="180">6A</button>
+        <button data-gun="0" class="active">Tümü</button>
+      </div>
+    </div>
+    <div class="chart-box-line"><canvas id="gunlukChart"></canvas></div>
+  </section>
+</div>
+
+<script>
+const AYLAR_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const ayAdiTr = (ym) => {
+  if (!ym) return '-';
+  const [y, m] = ym.split('-');
+  return `${AYLAR_TR[Number(m) - 1]} ${y}`;
+};
+const oncekiAyStr = (ym, geriSay) => {
+  const [y, m] = ym.split('-').map(Number);
+  const top = y * 12 + (m - 1) - geriSay;
+  const ny = Math.floor(top / 12);
+  const nm = ((top % 12) + 12) % 12 + 1;
+  return `${ny}-${String(nm).padStart(2, '0')}`;
+};
+
+const fmtNum = (v, d=2) => (v === null || v === undefined || Number.isNaN(v)) ? '-' : Number(v).toLocaleString('tr-TR', {minimumFractionDigits: d, maximumFractionDigits: d});
+const fmtPct = (v) => (v === null || v === undefined || Number.isNaN(v)) ? '-' : (v > 0 ? '+' : '') + fmtNum(v, 2) + '%';
+const pctCls = (v) => v > 0 ? 'pos' : (v < 0 ? 'neg' : '');
+
+const GRUPLAR = [
+  { ad: 'Genel Gıda',           gunKey: 'genel_gida',         ayKey: 'genel_gida_pct',  renk: '#38bdf8', canvasId: 'barGenel' },
+  { ad: 'Çekirdek Gıda',        gunKey: 'cekirdek_gida',      ayKey: 'cekirdek_pct',    renk: '#a78bfa', canvasId: 'barCekirdek' },
+  { ad: 'Taze Meyve & Sebze',   gunKey: 'taze_meyve_sebze',   ayKey: 'meyve_sebze_pct', renk: '#34d399', canvasId: 'barMeyve' },
+  { ad: 'Alkolsüz İçecekler',   gunKey: 'alkolsuz_icecekler', ayKey: 'icecek_pct',      renk: '#fbbf24', canvasId: 'barIcecek' },
+];
+
+let gunlukVeri = [], gChart = null;
+
+function cizGunluk(gunLimit) {
+  const veri = gunLimit > 0 ? gunlukVeri.slice(-gunLimit) : gunlukVeri;
+  if (gChart) gChart.destroy();
+  gChart = new Chart(document.getElementById('gunlukChart'), {
+    type: 'line',
+    data: {
+      labels: veri.map(x => x.tarih),
+      datasets: GRUPLAR.map(g => ({
+        label: g.ad,
+        data: veri.map(x => x[g.gunKey]),
+        borderColor: g.renk,
+        borderWidth: g.gunKey === 'genel_gida' ? 2.4 : 1.7,
+        pointRadius: 0
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#cbd5e1', boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', maxTicksLimit: 11 }, grid: { color: 'rgba(51,65,85,0.35)' } },
+        y: { beginAtZero: false, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.35)' } }
+      }
+    }
+  });
+}
+
+function cizBar(canvasId, aylikVeri, alanKey) {
+  const son14 = aylikVeri.slice(-14);
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: son14.map(x => x.ay),
+      datasets: [{
+        label: 'Aylık Değişim (%)',
+        data: son14.map(x => x[alanKey]),
+        backgroundColor: son14.map(x => x[alanKey] >= 0 ? 'rgba(248,113,113,0.78)' : 'rgba(52,211,153,0.78)'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + fmtPct(ctx.parsed.y) } }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: '#94a3b8', callback: v => v + '%' }, grid: { color: 'rgba(51,65,85,0.35)' } }
+      }
+    }
+  });
+}
+
+function aylikOrtEndeks(ym, gunKey, gunlukList) {
+  let parcalar = gunlukList.filter(x => x.tarih.startsWith(ym) && Number(x.tarih.slice(8, 10)) <= 24);
+  if (!parcalar.length) {
+    parcalar = gunlukList.filter(x => x.tarih.startsWith(ym));
+  }
+  if (!parcalar.length) return null;
+  return parcalar.reduce((acc, x) => acc + x[gunKey], 0) / parcalar.length;
+}
+
+function onIkiAylikOrtEnflasyon(donemYm, gunKey, gunlukList) {
+  const son12 = [], onceki12 = [];
+  for (let k = 0; k < 12; k++) {
+    const v1 = aylikOrtEndeks(oncekiAyStr(donemYm, k), gunKey, gunlukList);
+    const v0 = aylikOrtEndeks(oncekiAyStr(donemYm, k + 12), gunKey, gunlukList);
+    if (v1 === null || v0 === null) return null;
+    son12.push(v1);
+    onceki12.push(v0);
+  }
+  const ort1 = son12.reduce((a, b) => a + b, 0) / 12;
+  const ort0 = onceki12.reduce((a, b) => a + b, 0) / 12;
+  return ((ort1 / ort0) - 1.0) * 100.0;
+}
+
+async function baslat() {
+  const [gunluk, aylik] = await Promise.all([
+    fetch('./web_data/gida_endeksi.json').then(r => r.json()),
+    fetch('./web_data/aylik_enflasyon.json').then(r => r.json()),
+  ]);
+
+  gunlukVeri = gunluk;
+  const son = gunluk[gunluk.length - 1];
+  const dun = gunluk.length > 1 ? gunluk[gunluk.length - 2] : son;
+  const sonAy = aylik[aylik.length - 1];
+  const donemYm = sonAy ? sonAy.ay : son.tarih.slice(0, 7);
+  const donemAdi = ayAdiTr(donemYm);
+  const gecenYilYm = oncekiAyStr(donemYm, 12);
+
+  document.getElementById('donemRozet').textContent = 'Güncel Dönem: ' + donemAdi;
+
+  const baslikSatiri = `
+    <div class="grid-headers">
+      <div></div>
+      <div class="col-head">Endeks</div>
+      <div class="col-head">Aylık Enflasyon</div>
+      <div class="col-head">Yıllık Enflasyon</div>
+      <div class="col-head">12 Aylık Ortalama Enflasyon</div>
+    </div>
+  `;
+
+  const kpiHtml = baslikSatiri + GRUPLAR.map(g => {
+    const endeks = son[g.gunKey];
+    const gunlukPct = ((endeks / dun[g.gunKey]) - 1.0) * 100.0;
+    const aylikPct = sonAy ? sonAy[g.ayKey] : null;
+    const buOrt = aylikOrtEndeks(donemYm, g.gunKey, gunluk);
+    const gecenOrt = aylikOrtEndeks(gecenYilYm, g.gunKey, gunluk);
+    const yillikPct = (buOrt && gecenOrt) ? ((buOrt / gecenOrt) - 1.0) * 100.0 : null;
+    const ort12Pct = onIkiAylikOrtEnflasyon(donemYm, g.gunKey, gunluk);
+    const geciciNot = (sonAy && !sonAy.kesinlesmis) ? '<div class="kpi-sub">Geçici</div>' : '';
+
+    return `
+      <div class="group-row">
+        <div class="group-label" style="border-left-color:${g.renk}">
+          <span class="dot" style="background:${g.renk}"></span>
+          <span>${g.ad}</span>
+        </div>
+        <div class="cell-wrap">
+          <div class="pill-card">
+            <div class="mobile-label">Endeks</div>
+            <div class="kpi-val">${fmtNum(endeks, 2)}</div>
+            <div class="kpi-sub">Günlük: <span class="${pctCls(gunlukPct)}">${fmtPct(gunlukPct)}</span></div>
+          </div>
+        </div>
+        <div class="cell-wrap">
+          <div class="pill-card">
+            <div class="mobile-label">Aylık Enflasyon</div>
+            <div class="kpi-val ${pctCls(aylikPct)}">${fmtPct(aylikPct)}</div>
+            ${geciciNot}
+          </div>
+        </div>
+        <div class="cell-wrap">
+          <div class="pill-card">
+            <div class="mobile-label">Yıllık Enflasyon</div>
+            <div class="kpi-val ${pctCls(yillikPct)}">${fmtPct(yillikPct)}</div>
+          </div>
+        </div>
+        <div class="cell-wrap">
+          <div class="pill-card">
+            <div class="mobile-label">12 Aylık Ortalama</div>
+            <div class="kpi-val ${pctCls(ort12Pct)}">${fmtPct(ort12Pct)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('kpiAlani').innerHTML = kpiHtml;
+
+  GRUPLAR.forEach(g => cizBar(g.canvasId, aylik, g.ayKey));
+  cizGunluk(0);
+}
+
+document.querySelectorAll('#aralikButonlar button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#aralikButonlar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    cizGunluk(Number(btn.dataset.gun));
+  });
+});
+
+baslat().catch(err => console.error(err));
+</script>
+</body>
+</html>

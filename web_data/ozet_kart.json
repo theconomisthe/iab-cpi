@@ -1,0 +1,18 @@
+{
+  "guncelleme_tarihi": "2026-11-24",
+  "genel_gida_endeks": 144.7541,
+  "gunluk_degisim_pct": 0.09,
+  "aylik_1_24_pct": 1.9,
+  "yillik_degisim_pct": 33.06,
+  "alt_gruplar": {
+    "cekirdek_gida": 142.9684,
+    "taze_meyve_sebze": 136.7706,
+    "alkolsuz_icecekler": 155.3082
+  },
+  "kapsam": {
+    "toplam_sku": 1854,
+    "canli_guncel": 1718,
+    "carry_forward": 130,
+    "mevsimlik_cf": 6
+  }
+}
