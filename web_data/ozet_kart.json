@@ -1,18 +1,18 @@
 {
-  "guncelleme_tarihi": "2026-11-24",
-  "genel_gida_endeks": 144.7534,
-  "gunluk_degisim_pct": 0.09,
+  "guncelleme_tarihi": "2026-11-25",
+  "genel_gida_endeks": 145.3902,
+  "gunluk_degisim_pct": 0.44,
   "aylik_1_24_pct": 1.9,
-  "yillik_degisim_pct": 33.06,
+  "yillik_degisim_pct": 32.66,
   "alt_gruplar": {
-    "cekirdek_gida": 142.967,
-    "taze_meyve_sebze": 136.7734,
-    "alkolsuz_icecekler": 155.3067
+    "cekirdek_gida": 143.3643,
+    "taze_meyve_sebze": 139.1809,
+    "alkolsuz_icecekler": 154.5264
   },
   "kapsam": {
     "toplam_sku": 1854,
-    "canli_guncel": 1740,
-    "carry_forward": 108,
+    "canli_guncel": 1714,
+    "carry_forward": 134,
     "mevsimlik_cf": 6
   }
 }
