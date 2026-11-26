@@ -262,8 +262,8 @@ function onIkiAylikOrtEnflasyon(donemYm, gunKey, gunlukList) {
 
 async function baslat() {
   const [gunluk, aylik] = await Promise.all([
-    fetch('./web_data/gida_endeksi.json').then(r => r.json()),
-    fetch('./web_data/aylik_enflasyon.json').then(r => r.json()),
+    fetch(`./web_data/gida_endeksi.json?v=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+    fetch(`./web_data/aylik_enflasyon.json?v=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
   ]);
 
   gunlukVeri = gunluk;
